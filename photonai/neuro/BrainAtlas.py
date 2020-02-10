@@ -55,8 +55,8 @@ class BrainAtlas(BaseEstimator):
 
             with open(ATLAS_DICT[self.atlas_name][1]) as f:
                 for line in f:
-                    (key, val) = line.split("\t")
-                    labels_dict[int(key)] = val
+                    label_info = line.split("\t")
+                    labels_dict[float(label_info[0])] = label_info[1]
 
             # check if map indices correspond with indices in the labels file
             if not sorted(self.indices) == sorted(list(labels_dict.keys())):
@@ -188,6 +188,8 @@ class BrainAtlas(BaseEstimator):
 
         self.atlas_info_object.roi_names_runtime = self.labels_applied
 
+        if self.extract_mode == 'mean':
+            roi_data = np.transpose(np.asarray(roi_data))
         if len(roi_data)==1:
             roi_data = roi_data[0]
 

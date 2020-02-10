@@ -14,16 +14,17 @@ from nilearn import datasets
 from sklearn.model_selection import KFold
 
 # Get data first, 50 subjects from the OASIS database, VBM images and age
-oasis = datasets.fetch_oasis_vbm(n_subjects=50)
+oasis = datasets.fetch_oasis_vbm(n_subjects=12)
 files = oasis.gray_matter_maps
 targets = oasis.ext_vars['age'].astype(float)
 
 # We start by building a NeuroModuleBranch including a brain atlas
 neuro_branch = NeuroModuleBranch('NeuroBranch')
-neuro_branch += PipelineElement('ResampleImgs', {'voxel_size': [[5, 5, 5]]})
-atlas_info = AtlasInfo(atlas_name='AAL', roi_names=['Precentral_R'], extraction_mode='vec')
+#neuro_branch += PipelineElement('ResampleImgs', {'voxel_size': [[5, 5, 5]]})
+#atlas_info = AtlasInfo(atlas_name='AAL', roi_names=['Precentral_R'], extraction_mode='vec')
+atlas_info = AtlasInfo(atlas_name='Schaefer2018_400Parcels_7Networks_order_FSLMNI152_1mm', roi_names=['all'],
+                       extraction_mode='mean')
 neuro_branch += PipelineElement('BrainAtlas', {}, atlas_info_object=atlas_info)
-
 # Now, we build a Hyperpipe and add the neuro branch to it
 pipe = Hyperpipe('neuro_module_branch_example', optimizer='grid_search',
                     optimizer_params={},
@@ -31,7 +32,8 @@ pipe = Hyperpipe('neuro_module_branch_example', optimizer='grid_search',
                     best_config_metric='mean_squared_error',
                     inner_cv=KFold(n_splits=2, shuffle=True, random_state=3),
                     outer_cv=KFold(n_splits=2, shuffle=True, random_state=3),
-                    eval_final_performance=True)
+                    eval_final_performance=True,
+                 verbosity=2)
 pipe += neuro_branch
 
 # Finally, we add an estimator
